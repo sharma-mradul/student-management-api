@@ -1,3 +1,6 @@
+const Student = require("./models/Student");
+
+const { createStudent , getStudent , getStudentById , updateStudent , deleteStudent} = require("./controllers/studentController");
 const mongoose = require("mongoose");
 const express = require ("express"); //means to load the express library in my program
 const app = express(); //means to create a new express application and store it in app
@@ -14,57 +17,67 @@ mongoose.connect("mongodb://localhost:27017/studentDB")
 });
 
 
-const studentSchema = new mongoose.Schema({
-    name: String,
-    cgpa: Number
-});
+// const studentSchema = new mongoose.Schema({
+//     name: String,
+//     cgpa: Number
+// });
 
 
-const Student = mongoose.model(
-    "Student",
-    studentSchema
-); //means mongoose create a student model using student schema
+// const Student = mongoose.model(
+//     "Student",
+//     studentSchema
+// ); //means mongoose create a student model using student schema
 
 
 //routes
-app.get("/" , (req , res) => {
-    res.send("welcome to student management api ");
-});
+// app.get("/" , (req , res) => {
+//     res.send("welcome to student management api ");
+// });
 
-app.get("/about" , (req,res) => {
-    res.send("this is about page");
-});
+// app.get("/about" , (req,res) => {
+//     res.send("this is about page");
+// });
 
-app.post("/students" , async (req,res) => {
-    const student = new Student(req.body);
-    await student.save();
-        res.send("student saved successfully");
-});
+// app.post("/students" , async (req,res) => {
+//     const student = new Student(req.body);
+//     await student.save();
+//         res.send("student saved successfully");
+// });
 
-app.get("/students" , async (req,res) => {
-    const students = await Student.find();
-    res.send(students);
-});
+app.post("/students" , createStudent);
 
-app.get("/students/:id" , async (req , res) => {
-    // console.log(req.params);
-    const student = await Student.findById(req.params.id);
-    res.send(student);
-    // res.send("received id");
-});
+app.get("/students" , getStudent);
 
-app.put("/students/:id" , async (req , res) => {
-    await Student.findByIdAndUpdate(
-        req.params.id,
-        req.body
-    );
-    res.send("Student Updated Successfully")
-});
+app.get("/students/:id" , getStudentById);
 
-app.delete("/students/:id" , async(req , res) => {
-    await Student.findByIdAndDelete(req.params.id);
-    res.send("Student Deleted Successfully");
-});
+app.put("/students/:id" , updateStudent);
+
+app.delete("/students/:id" , deleteStudent);
+
+// app.get("/students" , async (req,res) => {
+//     const students = await Student.find();
+//     res.send(students);
+// });
+
+// app.get("/students/:id" , async (req , res) => {
+//     // console.log(req.params);
+//     const student = await Student.findById(req.params.id);
+//     res.send(student);
+//     // res.send("received id");
+// });
+
+// app.put("/students/:id" , async (req , res) => {
+//     await Student.findByIdAndUpdate(
+//         req.params.id,
+//         req.body
+//     );
+//     res.send("Student Updated Successfully")
+// });
+
+// app.delete("/students/:id" , async(req , res) => {
+//     await Student.findByIdAndDelete(req.params.id);
+//     res.send("Student Deleted Successfully");
+// });
 
 app.listen(3000 , () => {
     console.log("server running on port 3000");
