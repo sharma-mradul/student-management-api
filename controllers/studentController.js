@@ -22,20 +22,58 @@ const createStudent = async (req , res , next) => {
 };
 
 //READ ALL
-const getStudent = async (req , res) => {
-    // const students = await Student.find();
+// const getStudent = async (req , res) => {
+//     // const students = await Student.find();
 
-    const cgpa = req.query.cgpa;
-    let students;
-    if(cgpa) {
-        students = await Student.find({cgpa : cgpa});
+//     const cgpa = req.query.cgpa;
+//     let students;
+//     if(cgpa) {
+//         students = await Student.find({cgpa : cgpa});
+//     }
+//     else{
+//         students = await Student.find();
+//     }
+//     // res.send(students);
+//     res.status(200).json(students);
+// }
+
+
+// const getStudents = async (req , res , next) => {
+//     try{
+//         const page = Number(req.query.page) || 1;
+//         const limit = Number(req.query.limit) || 5;
+//         const skip = (page - 1) * limit;
+//         const students = await Student.find()
+//         .skip(skip)
+//         .limit(limit);
+//         res.status(200).json(students);
+//     }
+//     catch(err){
+//         next(err);
+//     }
+// };
+//combining pagination with req.query.cgpa
+const getStudent = async (req , res , next) => {
+    try{
+        const page = Number(req.query.page) || 1;
+        const limit = Number(req.query.limit) || 5;
+        const skip = (page - 1)*limit;
+
+        //creating filter
+        const filter = {};
+        if(req.query.cgpa){
+            filter.cgpa = Number(req.query.cgpa);
+        }
+        const students = await Student.find(filter)
+        .skip(skip)
+        .limit(limit);
+        res.status(200).json(students);
     }
-    else{
-        students = await Student.find();
+    catch(err){
+        next(err);
     }
-    // res.send(students);
-    res.status(200).json(students);
-}
+};
+
 
 //READ ONE
 const getStudentById = async (req , res) => {
