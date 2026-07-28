@@ -1,7 +1,7 @@
 const Student = require("../models/Student");
 
 //CREATE
-const createStudent = async (req , res) => {
+const createStudent = async (req , res , next) => {
     try{
     const student = new Student(req.body);
     await student.save();
@@ -11,18 +11,28 @@ const createStudent = async (req , res) => {
     });
     }
     catch(err){
-        console.log(err);
-        res.status(500).json({
-            success: false,
-            message: "Internal Server Error"
-        });
+        // console.log(err);
+        // res.status(500).json({
+        //     success: false,
+        //     message: "Internal Server Error"
+        // });
+        next(err);
     }
 
 };
 
 //READ ALL
 const getStudent = async (req , res) => {
-    const students = await Student.find();
+    // const students = await Student.find();
+
+    const cgpa = req.query.cgpa;
+    let students;
+    if(cgpa) {
+        students = await Student.find({cgpa : cgpa});
+    }
+    else{
+        students = await Student.find();
+    }
     // res.send(students);
     res.status(200).json(students);
 }

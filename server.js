@@ -86,6 +86,7 @@
 
 const express = require("express");
 const mongoose = require("mongoose");
+const errorHandler = require("./middlewares/errorMiddleware");
 
 const studentRoutes = require("./routes/studentRoutes");
 
@@ -98,6 +99,7 @@ mongoose.connect("mongodb://localhost:27017/studentDB")
 .catch(err => console.log(err));
 
 app.use("/students" , studentRoutes);
+app.use(errorHandler);
 
 app.listen(3000 , () => {
     console.log("server running on port 3000");
