@@ -61,10 +61,26 @@ const getStudent = async (req , res , next) => {
 
         //creating filter
         const filter = {};
+
+        //creating sorting
+        let sort = {};
+        
+        if(req.query.sort){
+            const field = req.query.sort;
+
+            if(field.startsWith("-")){
+                sort[field.substring(1)] = -1;
+            }
+            else{
+                sort[field] = 1;
+            }
+        }
+
         if(req.query.cgpa){
             filter.cgpa = Number(req.query.cgpa);
         }
         const students = await Student.find(filter)
+        .sort(sort)
         .skip(skip)
         .limit(limit);
         res.status(200).json(students);
