@@ -1,10 +1,12 @@
 const Student = require("../models/Student");
+const studentService = require("../services/studentService");
 
 //CREATE
 const createStudent = async (req , res , next) => {
     try{
-    const student = new Student(req.body);
-    await student.save();
+    // const student = new Student(req.body);
+    // await student.save();
+    const student = await studentService.createStudent(req.body);
     // res.send("student saved successfully");
     res.status(201).json({
         message: "Student Saved Successfully"
@@ -79,10 +81,17 @@ const getStudent = async (req , res , next) => {
         if(req.query.cgpa){
             filter.cgpa = Number(req.query.cgpa);
         }
-        const students = await Student.find(filter)
-        .sort(sort)
-        .skip(skip)
-        .limit(limit);
+        // const students = await Student.find(filter)
+        // .sort(sort)
+        // .skip(skip)
+        // .limit(limit);
+
+        const students = await studentService.getStudents(
+            filter,
+            sort,
+            skip,
+            limit
+        );
         res.status(200).json(students);
     }
     catch(err){
