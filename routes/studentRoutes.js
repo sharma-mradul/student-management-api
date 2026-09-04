@@ -5,11 +5,13 @@ const authorize = require("../middlewares/roleMiddleware");
 const router = express.Router();
 
 const{
-    createStudent , getStudent , getStudentById , updateStudent , deleteStudent
+    createStudent , getStudent , getStudentById , updateStudent , deleteStudent , getStudentStats , getDepartmentStats
 } = require("../controllers/studentController");
 
 router.post("/" , createStudent);
 router.get("/" , authMiddleware , getStudent);
+router.get("/stats" , authMiddleware , getStudentStats);
+router.get("/stats/department" , authMiddleware , getDepartmentStats);
 router.get("/:id" , getStudentById);
 router.put("/:id" , updateStudent);
 // router.delete("/:id" , deleteStudent);

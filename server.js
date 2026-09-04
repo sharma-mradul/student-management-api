@@ -83,7 +83,7 @@
 //     console.log("server running on port 3000");
 // });
 
-
+require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const errorHandler = require("./middlewares/errorMiddleware");
@@ -91,9 +91,11 @@ const authRoutes = require("./routes/authRoutes");
 
 const studentRoutes = require("./routes/studentRoutes");
 
+const cookieParser = require("cookie-parser");
 const app = express();
 
 app.use(express.json());
+app.use(cookieParser());
 
 mongoose.connect("mongodb://localhost:27017/studentDB")
 .then(() => console.log("mongodb connected"))

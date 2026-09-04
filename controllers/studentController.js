@@ -2,25 +2,37 @@ const Student = require("../models/Student");
 const studentService = require("../services/studentService");
 
 //CREATE
-const createStudent = async (req , res , next) => {
+// const createStudent = async (req , res , next) => {
+//     try{
+//     // const student = new Student(req.body);
+//     // await student.save();
+//     const student = await studentService.createStudent(req.body);
+//     // res.send("student saved successfully");
+//     res.status(201).json({
+//         message: "Student Saved Successfully"
+//     });
+//     }
+//     catch(err){
+//         // console.log(err);
+//         // res.status(500).json({
+//         //     success: false,
+//         //     message: "Internal Server Error"
+//         // });
+//         next(err);
+//     }
+
+// };
+const createStudent = async (req , res , next) =>{
     try{
-    // const student = new Student(req.body);
-    // await student.save();
-    const student = await studentService.createStudent(req.body);
-    // res.send("student saved successfully");
-    res.status(201).json({
-        message: "Student Saved Successfully"
-    });
+        const student = await studentService.createStudent(req.body);
+        res.status(201).json({
+            message: "Student Saved Successfully",
+            student : student
+        });
     }
     catch(err){
-        // console.log(err);
-        // res.status(500).json({
-        //     success: false,
-        //     message: "Internal Server Error"
-        // });
         next(err);
     }
-
 };
 
 //READ ALL
@@ -124,4 +136,26 @@ const deleteStudent = async (req , res) => {
         message: "Student Deleted Successfully"
     });
 }
-module.exports = { createStudent , getStudent , getStudentById , updateStudent , deleteStudent};
+
+
+const getStudentStats = async (req , res , next) => {
+    try{
+        const stats = await studentService.getStudentStats();
+        res.status(200).json(stats);
+    }
+    catch(err){
+        next(err);
+    }
+};
+
+const getDepartmentStats = async (req , res , next) => {
+    try{
+        const stats = await studentService.getDepartmentStats();
+        res.status(200).json(stats);
+    }
+    catch(err){
+        next(err);
+    }
+};
+
+module.exports = { createStudent , getStudent , getStudentById , updateStudent , deleteStudent , getStudentStats , getDepartmentStats};
