@@ -83,7 +83,7 @@
 //     console.log("server running on port 3000");
 // });
 
-require("dotenv").config();
+require("dotenv").config();  //loads value from .env into process.env
 const express = require("express");
 const mongoose = require("mongoose");
 const errorHandler = require("./middlewares/errorMiddleware");
@@ -102,9 +102,37 @@ mongoose.connect("mongodb://localhost:27017/studentDB")
 .catch(err => console.log(err));
 
 app.use("/students" , studentRoutes);
-app.use(errorHandler);
 app.use('/auth' , authRoutes);
+app.use(errorHandler);
 
 app.listen(3000 , () => {
     console.log("server running on port 3000");
 });
+
+
+
+// server.js = entry point of backend
+
+// dotenv
+// → loads .env variables
+
+// express()
+// → creates app
+
+// express.json()
+// → parses JSON → req.body
+
+// cookieParser()
+// → parses cookies → req.cookies
+
+// mongoose.connect()
+// → connects MongoDB
+
+// app.use("/prefix", routes)
+// → connects route files
+
+// errorHandler
+// → handles errors via next(err)
+
+// app.listen()
+// → starts server
