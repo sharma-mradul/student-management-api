@@ -65,6 +65,15 @@ const login = async (req , res , next) => {
                 process.env.JWT_REFRESH_SECRET,
                 {expiresIn: "7d"}
             );
+            const expiresAt = new Date(
+                Date.now() + 7 * 24 * 60 * 60 * 1000
+            );
+            const refreshTokenDoc = new RefreshToken({
+                userId: user._id,
+                token: refreshToken,
+                expiresAt
+            });
+            await refreshTokenDoc.save();
 
             res.cookie("refreshToken" , refreshToken , {
                 httpOnly: true
@@ -91,6 +100,17 @@ const refreshAccessToken = async (req, res, next) => {
             refreshToken,
             process.env.JWT_REFRESH_SECRET
         );
+
+        const storedToken = await RefreshToken.findOne({
+            token: refreshToken
+        });
+        if(!storedToken)
+        {
+            return res.status(401).json({
+                success: false,
+                message: "Refresh token revoked"
+            });
+        }
 
         const accessToken = jwt.sign(
             {
@@ -120,13 +140,29 @@ const refreshAccessToken = async (req, res, next) => {
 
 };
 
-const expiresAt = new Date(
-    Date.now() + 7 * 24 * 60 * 60 * 1000
-);
-const refreshTokenDoc = new RefreshToken({
-    userId: user._id,
-    token: refreshToken,
-    expiresAt
-});
-await refreshTokenDoc.save();
-module.exports = { register , login , refreshAccessToken};
+const logout = async (req , res , next) => {
+    try{
+        req.cookie("refreshToken" , refreshToken , {
+            httpOnly: true
+        });
+
+        const { refreshToken } = req.cookie;
+
+        await RefreshToken.deleteOne({
+            token: refreshToken
+        });
+
+        res.clearCookie("refreshToken");
+
+        return res.status(200).json({
+            success: true,
+            message: "Logout Successful"
+        });
+    }
+    catch (err) {
+        next(err);
+    }
+};
+
+
+module.exports = { register , login , refreshAccessToken , logout};
