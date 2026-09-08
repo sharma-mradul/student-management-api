@@ -142,11 +142,7 @@ const refreshAccessToken = async (req, res, next) => {
 
 const logout = async (req , res , next) => {
     try{
-        req.cookie("refreshToken" , refreshToken , {
-            httpOnly: true
-        });
-
-        const { refreshToken } = req.cookie;
+        const { refreshToken } = req.cookies;
 
         await RefreshToken.deleteOne({
             token: refreshToken
@@ -163,6 +159,7 @@ const logout = async (req , res , next) => {
         next(err);
     }
 };
+
 
 
 module.exports = { register , login , refreshAccessToken , logout};

@@ -102,7 +102,7 @@ mongoose.connect("mongodb://localhost:27017/studentDB")
 .catch(err => console.log(err));
 
 app.use("/students" , studentRoutes);
-app.use('/auth' , authRoutes);
+app.use("/auth" , authRoutes);
 app.use(errorHandler);
 
 app.listen(3000 , () => {

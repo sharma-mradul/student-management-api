@@ -8,6 +8,7 @@ router.post("/register" , register);
 router.post("/login" , login);
 router.post("/refresh" , refreshAccessToken);
 router.post("/logout" , logout);
+
 module.exports = router;
 
 //router.post() -> matches request -> calls controller
