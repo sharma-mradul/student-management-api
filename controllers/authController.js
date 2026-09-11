@@ -73,6 +73,7 @@ const login = async (req , res , next) => {
                 token: refreshToken,
                 expiresAt
             });
+            
             await refreshTokenDoc.save();
 
             res.cookie("refreshToken" , refreshToken , {
@@ -93,8 +94,8 @@ const login = async (req , res , next) => {
 const refreshAccessToken = async (req, res, next) => {
 
     try {
-
         const { refreshToken } = req.cookies;
+        console.log("REFRESH TOKEN:" , req.cookies.refreshToken);
 
         const decoded = jwt.verify(
             refreshToken,
@@ -104,6 +105,7 @@ const refreshAccessToken = async (req, res, next) => {
         const storedToken = await RefreshToken.findOne({
             token: refreshToken
         });
+
         if(!storedToken)
         {
             return res.status(401).json({
@@ -111,6 +113,38 @@ const refreshAccessToken = async (req, res, next) => {
                 message: "Refresh token revoked"
             });
         }
+
+        const remainingTime = storedToken.expiresAt.getTime() - Date.now();
+        const remainingSeconds = Math.floor(remainingTime / 1000);
+        //1000 milliseconds = 1 second
+
+        await RefreshToken.deleteOne({
+            token: refreshToken
+        }) 
+
+        const newRefreshToken = jwt.sign(
+            {
+                userId: decoded.userId,
+                role: decoded.role
+            },
+            process.env.JWT_REFRESH_SECRET,
+            {
+                expiresIn: remainingSeconds
+            }
+        )
+
+        const newRefreshTokenDoc = new RefreshToken({
+                userId: decoded.userId,
+                token: newRefreshToken,
+                expiresAt: storedToken.expiresAt
+        });
+
+        await newRefreshTokenDoc.save();
+
+        res.cookie("refreshToken", newRefreshToken, {
+            httpOnly: true
+        });
+
 
         const accessToken = jwt.sign(
             {
