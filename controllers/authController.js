@@ -2,6 +2,7 @@ const User = require("../models/User");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const RefreshToken = require("../models/RefreshToken");
+const crypto = require("crypto"); //built in node.js module
 
 const register = async (req , res , next) => {
     try{
@@ -31,6 +32,7 @@ const register = async (req , res , next) => {
 const login = async (req , res , next) => {
     try{
         const {email , password} = req.body;
+
 
         const user = await User.findOne({email});
 
@@ -68,9 +70,13 @@ const login = async (req , res , next) => {
             const expiresAt = new Date(
                 Date.now() + 7 * 24 * 60 * 60 * 1000
             );
+
+            const familyId = crypto.randomUUID(); //UUID = universally unique identifier
+
             const refreshTokenDoc = new RefreshToken({
                 userId: user._id,
                 token: refreshToken,
+                familyId,
                 expiresAt
             });
             
@@ -114,13 +120,28 @@ const refreshAccessToken = async (req, res, next) => {
             });
         }
 
+        if(storedToken.status !== "active")
+        {
+            await RefreshToken.updateMany(
+                { familyId: storedToken.familyId },
+                { $set: { status: "revoked" }}
+            );
+            return res.status(401).json({
+                success: false,
+                message: "Refresh token reuse detected"
+            });
+        }
+
         const remainingTime = storedToken.expiresAt.getTime() - Date.now();
         const remainingSeconds = Math.floor(remainingTime / 1000);
         //1000 milliseconds = 1 second
 
-        await RefreshToken.deleteOne({
-            token: refreshToken
-        }) 
+        // await RefreshToken.deleteOne({
+        //     token: refreshToken
+        // }) 
+
+        storedToken.status = "used"
+        await storedToken.save();
 
         const newRefreshToken = jwt.sign(
             {
@@ -136,6 +157,8 @@ const refreshAccessToken = async (req, res, next) => {
         const newRefreshTokenDoc = new RefreshToken({
                 userId: decoded.userId,
                 token: newRefreshToken,
+                familyId: storedToken.familyId,
+                status: "active",
                 expiresAt: storedToken.expiresAt
         });
 
@@ -161,6 +184,7 @@ const refreshAccessToken = async (req, res, next) => {
             success: true,
             accessToken
         });
+
 
     }
     catch (err) {

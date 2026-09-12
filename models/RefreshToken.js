@@ -13,6 +13,17 @@ const refreshTokenSchema = new mongoose.Schema({
         required: true
     },
 
+    familyId: {
+        type: String,
+        required: true
+    },
+
+    status: {
+        type: String,
+        enum: ["active" , "used" , "revoked"],
+        default: "active"
+    },
+
     expiresAt: {
         type: Date,
         required: true
