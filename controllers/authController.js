@@ -119,6 +119,14 @@ const refreshAccessToken = async (req, res, next) => {
         const { refreshToken } = req.cookies;
         // console.log("Refresh Token Received");
 
+        //edge cases implementation
+        if(!refreshToken){
+            return res.status(401).json({
+                success: false,
+                message: "Refresh token required"
+            });
+        }
+
         const hashedRefreshToken = hashToken(refreshToken);
 
         const decoded = jwt.verify(
