@@ -75,7 +75,9 @@ const login = async (req , res , next) => {
                 process.env.JWT_REFRESH_SECRET,
                 {expiresIn: "7d"}
             );
-            console.log("DEV REFRESH TOKEN:", refreshToken);
+
+            //just for testing pusrose i print refreshToken
+            // console.log("DEV REFRESH TOKEN:", refreshToken);
             const expiresAt = new Date(
                 Date.now() + 7 * 24 * 60 * 60 * 1000
             );
@@ -94,7 +96,10 @@ const login = async (req , res , next) => {
             await refreshTokenDoc.save();
 
             res.cookie("refreshToken" , refreshToken , {
-                httpOnly: true
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",   //HTTPS only in production
+                sameSite: "lax",
+                maxAge: 7 * 24 * 60 * 60 * 1000
             });
 
             res.status(200).json({
@@ -112,7 +117,7 @@ const refreshAccessToken = async (req, res, next) => {
 
     try {
         const { refreshToken } = req.cookies;
-        console.log("Refresh Token Received");
+        // console.log("Refresh Token Received");
 
         const hashedRefreshToken = hashToken(refreshToken);
 
@@ -180,7 +185,10 @@ const refreshAccessToken = async (req, res, next) => {
         await newRefreshTokenDoc.save();
 
         res.cookie("refreshToken", newRefreshToken, {
-            httpOnly: true
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+            maxAge: remainingTime
         });
 
 
@@ -231,7 +239,11 @@ const logout = async (req , res , next) => {
             { $set: { status: "revoked" } }
         );
 
-        res.clearCookie("refreshToken");
+        res.clearCookie("refreshToken" , {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax"
+        });
 
         return res.status(200).json({
             success: true,
