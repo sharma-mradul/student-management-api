@@ -4,6 +4,14 @@ const jwt = require("jsonwebtoken");
 const RefreshToken = require("../models/RefreshToken");
 const crypto = require("crypto"); //built in node.js module
 
+
+//creating helper
+const hashToken = (token) => {
+    return crypto.createHash("sha256").update(token).digest("hex");
+};
+//creates a SHA-256 hashing operation , .update(token) feeds our refresh token into it , .digest("hex") returns resulting hash as a hexadecimal string
+
+
 const register = async (req , res , next) => {
     try{
         const { name , email , password } = req.body;
@@ -67,15 +75,18 @@ const login = async (req , res , next) => {
                 process.env.JWT_REFRESH_SECRET,
                 {expiresIn: "7d"}
             );
+            console.log("DEV REFRESH TOKEN:", refreshToken);
             const expiresAt = new Date(
                 Date.now() + 7 * 24 * 60 * 60 * 1000
             );
 
             const familyId = crypto.randomUUID(); //UUID = universally unique identifier
 
+            const hashedRefreshToken = hashToken(refreshToken);
+
             const refreshTokenDoc = new RefreshToken({
                 userId: user._id,
-                token: refreshToken,
+                token: hashedRefreshToken,
                 familyId,
                 expiresAt
             });
@@ -101,7 +112,9 @@ const refreshAccessToken = async (req, res, next) => {
 
     try {
         const { refreshToken } = req.cookies;
-        console.log("REFRESH TOKEN:" , req.cookies.refreshToken);
+        console.log("Refresh Token Received");
+
+        const hashedRefreshToken = hashToken(refreshToken);
 
         const decoded = jwt.verify(
             refreshToken,
@@ -109,7 +122,7 @@ const refreshAccessToken = async (req, res, next) => {
         );
 
         const storedToken = await RefreshToken.findOne({
-            token: refreshToken
+            token: hashedRefreshToken
         });
 
         if(!storedToken)
@@ -154,9 +167,11 @@ const refreshAccessToken = async (req, res, next) => {
             }
         )
 
+        const hashedNewRefreshToken = hashToken(newRefreshToken);
+
         const newRefreshTokenDoc = new RefreshToken({
                 userId: decoded.userId,
-                token: newRefreshToken,
+                token: hashedNewRefreshToken,
                 familyId: storedToken.familyId,
                 status: "active",
                 expiresAt: storedToken.expiresAt
@@ -202,9 +217,19 @@ const logout = async (req , res , next) => {
     try{
         const { refreshToken } = req.cookies;
 
-        await RefreshToken.deleteOne({
-            token: refreshToken
-        });
+        if(!refreshToken){
+            return res.status(401).json({
+                success: false,
+                message: "No Refresh Token"
+            });
+        }
+
+        const hashedRefreshToken = hashToken(refreshToken);
+
+        await RefreshToken.updateOne(
+            { token: hashedRefreshToken },
+            { $set: { status: "revoked" } }
+        );
 
         res.clearCookie("refreshToken");
 
@@ -217,7 +242,5 @@ const logout = async (req , res , next) => {
         next(err);
     }
 };
-
-
 
 module.exports = { register , login , refreshAccessToken , logout};
