@@ -26,6 +26,7 @@ const studentSchema = new mongoose.Schema({
     }
 });
 
+studentSchema.index({ cgpa: 1}); //here field = cgpa and 1 = ascending order , -1 means descending order
 const Student = mongoose.model("Student" , studentSchema);
 
 module.exports = Student;
