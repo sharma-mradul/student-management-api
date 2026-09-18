@@ -1,4 +1,5 @@
 const Student = require("../models/Student");
+const { client } = require("../config/redis");
 const getStudents = async(filter , sort , skip , limit) => {
     return await
     Student.find(filter).sort(sort).skip(skip).limit(limit);
