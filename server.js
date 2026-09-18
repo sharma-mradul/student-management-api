@@ -84,6 +84,8 @@
 // });
 
 require("dotenv").config();  //loads value from .env into process.env
+
+const { connectRedis } = require("./config/redis");
 const express = require("express");
 const mongoose = require("mongoose");
 const errorHandler = require("./middlewares/errorMiddleware");
@@ -104,6 +106,8 @@ mongoose.connect("mongodb://localhost:27017/studentDB")
 app.use("/students" , studentRoutes);
 app.use("/auth" , authRoutes);
 app.use(errorHandler);
+
+connectRedis();
 
 app.listen(3000 , () => {
     console.log("server running on port 3000");
