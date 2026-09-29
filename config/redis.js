@@ -1,16 +1,19 @@
-const redis = require("redis");
+const { createClient } = require("redis"); //it gets redis creator from package we installed
 
-const client = redis.createClient({
+const redisClient = createClient({
     url: "redis://localhost:6379"
-}); //connect to redis running on my port 6379
+}); //creates our redis client , 6379 is our default redis port
 
-client.on("error" , (err) => {
-    console.log("Redis Error:" , err);
-});
+redisClient.on("error" , (err) => {
+    console.log("Redis Client Error", err);
+}); //if redis has a connection/client error then show it
 
 const connectRedis = async () => {
-    await client.connect();
-    console.log("Redis Connected");
+    await redisClient.connect();     //actually extablishes the connection
+    console.log("Redis connected");
 };
 
-module.exports = { client , connectRedis };
+module.exports = {
+    redisClient,
+    connectRedis
+};

@@ -1,6 +1,6 @@
 const Student = require("../models/Student");
 const studentService = require("../services/studentService");
-const { client } = require("../config/redis");
+const { redisClient } = require("../config/redis");
 //CREATE
 // const createStudent = async (req , res , next) => {
 //     try{
@@ -117,7 +117,7 @@ const getStudentById = async (req , res) => {
 
     const studentId = req.params.id;
 
-    const cachedStudent = await client.get(`student:${studentId}`);
+    const cachedStudent = await redisClient.get(`student:${studentId}`);
 
     if(cachedStudent)
     {
@@ -126,13 +126,16 @@ const getStudentById = async (req , res) => {
     const student = await Student.findById(studentId);
     // res.send(student);
 
-    await client.set(
+    await redisClient.set(
         `student:${studentId}`,
         JSON.stringify(student),
         {
             EX: 60
         }
     );
+    //means key = student:123
+    //value = student object converted to JSON
+    //TTL = 60 seconds
     res.status(200).json(student);
 };
 
