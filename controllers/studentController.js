@@ -121,8 +121,10 @@ const getStudentById = async (req , res) => {
 
     if(cachedStudent)
     {
+        console.log(`[REDIS] Cache HIT -> student:${studentId}`);
         return res.status(200).json(JSON.parse(cachedStudent));
     }
+    console.log(`[REDIS] Cache MISS -> student:${studentId}`);
     const student = await Student.findById(studentId);
     // res.send(student);
 
