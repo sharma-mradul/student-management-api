@@ -117,6 +117,15 @@ const getStudent = async (req , res , next) => {
             skip,
             limit
         );
+
+        await redisClient.set(
+            cacheKey,
+            JSON.stringify(students),
+            {
+                EX: 60
+            }
+        );
+        
         res.status(200).json(students);
     }
     catch(err){
