@@ -73,6 +73,8 @@ const getStudent = async (req , res , next) => {
         const limit = Number(req.query.limit) || 5;
         const skip = (page - 1)*limit;
 
+        const cacheKey = `students:page=${page}:limit=${limit}:cgpa=${req.query.cgpa || "all"}:sort=${req.query.sort || "none"}`;
+
         //creating filter
         const filter = {};
 
@@ -93,6 +95,17 @@ const getStudent = async (req , res , next) => {
         if(req.query.cgpa){
             filter.cgpa = Number(req.query.cgpa);
         }
+
+        const cachedStudents = await redisClient.get(cacheKey);
+
+        if(cachedStudents)
+        {
+            console.log(`[REDIS] Cache HIT -> ${cacheKey}`);
+
+            return res.status(200).json(JSON.parse(cachedStudents));
+        }
+
+        console.log(`[REDIS] Cache MISS -> ${cacheKey}`);
         // const students = await Student.find(filter)
         // .sort(sort)
         // .skip(skip)
