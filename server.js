@@ -85,7 +85,7 @@
 
 require("dotenv").config();  //loads value from .env into process.env
 
-const { connectRedis } = require("./config/redis");
+const { redisClient, connectRedis } = require("./config/redis");
 const express = require("express");
 const mongoose = require("mongoose");
 const errorHandler = require("./middlewares/errorMiddleware");

@@ -1,8 +1,34 @@
 const Student = require("../models/Student");
-const { client } = require("../config/redis");
+const { redisClient } = require("../config/redis");
 const getStudents = async(filter , sort , skip , limit) => {
-    return await
-    Student.find(filter).sort(sort).skip(skip).limit(limit);
+
+    const cacheKey = `students:${JSON.stringify({
+        filter,
+        sort,
+        skip,
+        limit
+    })}`;
+    const cachedStudents = await redisClient.get(cacheKey);
+
+    if(cachedStudents)
+    {
+        console.log("Redis Cache HIT");
+        return JSON.parse(cachedStudents);
+    }
+    console.log("Redis Cache MISS");
+
+    const students = await Student.find(filter)
+    .sort(sort)
+    .skip(skip)
+    .limit(limit);
+
+    await redisClient.set(cacheKey,
+        JSON.stringify(students),
+        {
+            EX: 60
+        }
+    );
+    return students;
 };
 
 const createStudent = async(data) =>{
